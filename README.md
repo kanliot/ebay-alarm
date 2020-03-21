@@ -47,3 +47,6 @@ Set your alarm for any time that can be read by the date command.   Run any prog
      $ sudo ~/bin/ebay-alarm 12am next day -- pm-suspend
      $ sudo ~/bin/ebay-alarm 2 am next day -c btrfs scrub start -B /dev/sdd
     
+    ### Installation
+    download the ebay-alarm script and run it with perl    
+    --time-zone mode requires gawk (GNU awk) 
