@@ -21,9 +21,8 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
     Add a & after the command to run in the background.   If your command requires a
     terminal, ebay-alarm will not create one.  Use tmux or screen to run ebay-alarm 
     
-    	ebay-alarm parses time string like the `date` command then runs COMMAND at that time.
-    		See https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html
     	ebay-alarm calls the linux date command to parse the date and time of the alarm.
+    		See https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html
     	ebay-alarm then sleeps at intervals until that time, then runs the COMMAND and exits.
     	ebay-alarm uses a second process to monitor time zone changes and other changes in the system time.
     	ebay-alarm runs in the foreground.  use '&' to run in the background.
