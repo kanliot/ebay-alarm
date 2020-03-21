@@ -1,0 +1,254 @@
+#!/usr/bin/perl 
+#use Data::Dump;
+
+# this is like an alarm clock timer like at
+# but for people who don't want to install cron
+# or for people who want to run things as the current user, and use your shell's job control instead of atq job control 
+
+# adding the -p switch (allow times in past) means the command will run instantly instead of returning an error message instantly
+# nohup?  
+
+
+# kind of important to know: it doesn't calculate time to sleep, it checks the time each minute, and then runs command.
+# so it won't mess up if you change the time, unless you skip the time around, in which case, it might run at the same time tommorrow, since minutes might be lower. 
+
+# from ~/bin/stopp
+# was hardcoded to launch my mpv script.  possible interactions if you close the terminal, and the command you run needs a terminal, or exported DISPLAY=:0 
+
+# use -c or -- to specify end of time arguments, and begin 
+
+#argument to the command to be launched should be individually quoted or escaped, but not quoted and escaped.
+
+#$ date +%s
+#$ date -u +%s # proof epoch time is always not localized or broke-down time https://www.gnu.org/software/libc/manual/html_node/Broken_002ddown-Time.html#Broken_002ddown-Time
+# note the two are the same
+# time() should return epoch time, which is utc, and isn't localized, therefore can't be as a timer on systems like mine which changes with daylight savings time
+# so using local time is correct.
+# see https://stackoverflow.com/questions/26699238/what-happens-to-milliseconds-since-epoch-when-daylight-savings-time-begins-ends
+# is localtime impossible to be faked out by changing your locale around?  i donno, but it should work ok
+
+#ebay.pl is intentionally (ha) dumbed down to use local time, and not UTC time.  this allows the library to be aware of changes of time due to local.
+
+#ebay.pl now+10sec
+# or 10+now
+# or 10sec  now
+
+# oops didn't understand how to set something 5 mins, 1 sec from now
+
+# https://www.linuxjournal.com/content/doing-date-math-command-line-part-i
+# $ date --date 'March 1, 2015 +7 days'
+# Sun Mar  8 00:00:00 MST 2015
+# $ date --date 'March 1, 2015 -1 year'
+# Sat Mar  1 00:00:00 MST 2014
+# $ date --date 'March 1, 2015 +12 days +12 hours +15 minutes'
+# Fri Mar 13 12:15:00 MST 2015
+# 
+# You also can use strings that refer to previous or upcoming days of the week (relative to the current date):
+# 
+# $ date --date 'last Monday'
+# Mon Sep 10 00:00:00 MST 2018
+# $ date --date 'next Monday'
+# Mon Sep 17 00:00:00 MST 2018
+
+
+
+
+use feature 'say';
+use strict;
+my $progname='ebay-alarm'; 
+sub helpExit { 
+print STDOUT <<HELPTEXT
+Usage: $progname [options]... time string -c ALARM-COMMAND [command options and arguments]... 
+	$progname is a single script that simply watches the clock until your ALARM.
+	$progname will run any COMMAND, at any date provided by the time string.
+
+
+Here's a typical $progname example:
+ \$ $progname 13:00 -c notify-send 'late for lunch?'
+
+In the example above, the shell runs $progname in the foreground.
+Add a & after the command to run in the background.   If your command requires a
+terminal, $progname will not create one.  Use tmux or screen to run $progname 
+
+	$progname parses time string like the `date` command then runs COMMAND at that time.
+		See https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html
+	$progname calls the linux date command to parse the date and time of the alarm.
+	$progname then sleeps at intervals until that time, then runs the COMMAND and exits.
+	$progname uses a second process to monitor time zone changes and other changes in the system time.
+	$progname runs in the foreground.  use '&' to run in the background.
+	$progname does not provide a countdown, or a progress indicator.
+	$progname does not calculate seconds to sleep.  it sleeps for 1-3 seconds at a time, then looks at the system time.
+
+Program arguments must include a valid time. 
+If no command to run is given, the program simply exits at the proper time.
+The alarm command can be any length, but must follow '-c' or '--' 
+
+	-q		Quiet mode. 
+			$progname normally starts by printing the hours until the alarm.
+
+	-p 		$progname normally considers times in the past to be an error.
+			-p means the alarm should be run, even if the given time was in the past.
+
+	-c		Must not be before -q or -p 
+			Must not be before the time string
+	
+	--		Same as -c 
+
+	--time-zone 	$progname handles when your system (laptop) changes to a new time zone. 
+			Some laptops do this automatically when crossing the country. Requires more cpu.  
+
+Five examples: 
+ \$ $progname now + 1 day + 1 min  -c mpv ~/'music/Clawhammer-Dogma.mp3'
+ \$ $progname 0:00 next day -c speak-ng 'witch hour'  # 'tomorrow' also works 
+ \$ $progname -q 2 sec; echo "it's two seconds later"
+ \$ sudo ~/bin/$progname 12am next day -- pm-suspend
+ \$ sudo ~/bin/$progname 2 am next day -c btrfs scrub start -B /dev/sdd
+HELPTEXT
+;
+exit 0; 
+}
+
+my $b_quiet;
+my $b_passtimes;
+
+my $ext_time=0;  # time zone handling is slow, so don't do that by default
+#awk 'BEGIN{print strftime("%x %j %k %M %S");}'  #doy, #yr 00 part, 
+#			    %c  %y %j %l %S
+#shit ISO week number is dumb.  double check i dont do that 
+#huh should have just used time() 
+
+use warnings;
+my @timeargs; # consider the first arguments as strings describing time
+my @commandargs; 
+@_=@ARGV;  
+while (1) {
+	last if not scalar @_;
+	$_ = shift @_; # stop when hit '--' or '-c'
+	if ($_ eq '--' or $_ eq '-c'){
+#		for(@_) { # don't start from start }
+		push @commandargs, @_;
+		last;
+	}
+	helpExit() if $_ eq '-h' or $_ eq '--help' or $_ eq '-help'; 
+	$b_quiet=1,next  if $_ eq '-q';
+	$b_passtimes=1,next if $_ eq '-p';
+	$b_quiet = $b_passtimes = 1,next if $_ eq '-pq' or $_ eq '-qp';
+	$ext_time =1,next if $_ eq '--time-zone';
+	push @timeargs, $_;
+}
+
+say( "$progname requires time arguments.  maybe you meant --help ?"),exit if not scalar @timeargs; 
+
+#i can just call `date` a few times, and get the 24hr time, and even the elapsed time
+#uh the thing is, localtime has numbers for days and stuff and gnu time doesn't, so comparing two different things kinda.
+#so %j day of year in gnu:time maps to $yday
+#so %g maps to $year?
+#oops %g was ISO year! not same thing
+
+sub get_24hr_string { # takes epoch time, gets a simple to parse string
+	my $hr;
+	if ( ! @_ ) {  # get current time
+		$hr=	    `date +'%y %j %_H %M %S'`;
+	}else{	       # get specified time
+		$hr=`date -d '@_' +'%y %j %_H %M %S'`;
+	}
+# %y %j ok, year day
+	exit $?>>8 if $?;
+	chomp $hr;
+	return split ' ', $hr;
+}
+my ($tyear, $tyday, $thr, $tmin,$tsec ) = get_24hr_string @timeargs;
+
+#fixup $tyear and $tyday
+$tyear = int($tyear)+100; # should be years since 1900
+$tyday = int($tyday)-1; # should be day of year, 0 based
+$thr = int($thr);
+$tmin = int($tmin);
+$tsec = int($tsec);
+
+sub get_gnu_seconds {  # return epoch seconds by calling gnu `date`, or current time if empty
+	my $seconds;
+	if (@_) {
+		$seconds = `date -d '$_[0]' +%s`;
+		exit $?>>8 if $?;
+	}
+	else {
+		$seconds = `date +%s`;
+		exit $?>>8 if $?;
+	} 
+	return substr $seconds,0,-1;
+}
+
+
+#does a couple different things
+# checks to see if the seconds passed, are in the past, then looks at -q and -p 
+# if (negative) -p, then should continue
+# if (negative)  -q, then should complain then exit.
+# otherwise should tell user about when the alarm will execute
+sub say_hours_from_epoch {  
+
+	my $diff=$_[1]-$_[0];
+	say(STDERR 'fatal error. You may have specified a time in the past.  unless \'-p\' is passed, you must specify date in this case. try something like "9am tomorrow"'), exit 1 if 0>$diff and ! $b_passtimes;
+	return if $b_quiet;
+	return if 0>$diff;  # i think this is just to suppress the alarm message if we're past time anyhow
+	print 'alarm in: ',int( ($diff/3600)/24)," days, ";# https://unix.stackexchange.com/a/317146/8827
+	#system 'date', '-ud','@'."$diff","+%k hours and %M:%S minutes:seconds";
+	system 'date', '-ud','@'."$diff","+%k hours and %M minutes";		
+	exit $?>>8 if $?;
+}
+#chomp?
+
+{
+	my $nowtime_s= get_gnu_seconds();
+	my $eltimestr = join ' ', @timeargs;
+	my $eltime_s=get_gnu_seconds $eltimestr;
+	say_hours_from_epoch $nowtime_s,$eltime_s;  
+}
+
+
+
+# ok we don't actually use seconds in the main loop.
+# so the seconds calculation earlier is just for cosmetics.
+
+my $daymins = $thr * 60 + $tmin;  # odd but if we sleep we could miss a window where we're past time, but minutes is lower
+
+while (1) {
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+	if ($ext_time) { #handle timezone changes.
+		my $rr_time = ` awk 'BEGIN{print strftime("%Y %j %k %M %S");}' `;
+		# %j day_of_year
+		# %k 24_hour hour
+		
+		chomp $rr_time;
+		($year, $yday, $hour, $min, $sec) = split ' ' ,$rr_time;
+		#https://www.gnu.org/software/gawk/manual/html_node/Time-Functions.html
+		--$yday; # localtime is 0 based
+		$year -= 1900;  # localtime was based on 1900, 
+ #say "$year,$yday, $hour,$min,$sec";
+	}
+		
+	if( $year >= $tyear and $yday > $tyday) {  # missed a day  for some reason
+		playexit();
+	}
+	if( $year == $tyear and $yday == $tyday) {
+		if ($hour * 60 + $min > $daymins ) { # missed an hour for some reason
+			playexit();
+		}
+	}
+
+	if ( ($min >=  $tmin) && ($hour >= $thr) && ($yday >= $tyday) and ($year >= $tyear) ) {
+		my $sleeptime =  (int($tsec) - $sec);
+		$sleeptime = ($sleeptime > 0) ? $sleeptime :0;
+		sleep $sleeptime ;
+		playexit(); 	
+	}
+	if ($sec < 56) {
+		sleep 3;}
+	else {
+		sleep 1;
+	}
+}
+sub playexit { 
+	system @commandargs if scalar @commandargs; 
+	exit;
+}
