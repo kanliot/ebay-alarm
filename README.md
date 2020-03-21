@@ -57,4 +57,4 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
     
 ### Installation:
 Download the ebay-alarm script and run it with Perl.    
---time-zone mode requires gawk (GNU awk) 
+`--time-zone` mode requires gawk (GNU awk) 
