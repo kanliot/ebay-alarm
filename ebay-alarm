@@ -70,9 +70,8 @@ In the example above, the shell runs $progname in the foreground.
 Add a & after the command to run in the background.   If your command requires a
 terminal, $progname will not create one.  Use tmux or screen to run $progname 
 
-	$progname parses time string like the `date` command then runs COMMAND at that time.
-		See https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html
 	$progname calls the linux date command to parse the date and time of the alarm.
+		See https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html
 	$progname then sleeps at intervals until that time, then runs the COMMAND and exits.
 	$progname uses a second process to monitor time zone changes and other changes in the system time.
 	$progname runs in the foreground.  use '&' to run in the background.
