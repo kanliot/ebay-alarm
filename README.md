@@ -1,6 +1,14 @@
 # ebay-alarm
 Set your alarm for any time that can be read by the date command.   Run any program on the command line. 
 
+If `at` did what you wanted, you wouldn't be here, reading this page.    
+##### Does this look easy to you?: 
+`sleep 60s; mpv ~/lowbeep.ogg`    
+##### What about this? 
+`ebay-alarm 13:00 -c notify-send 'late for lunch?'`
+
+##### The goal of `ebay-alarm` is to make a simple alarm-clock, that accepts a wide array of time descriptions, and works even after your pc suspends.
+
     Usage: ebay-alarm [options]... time string -c ALARM-COMMAND [command options and arguments]... 
     	ebay-alarm is a single script that simply watches the clock until your ALARM.
     	ebay-alarm will run any COMMAND, at any date provided by the time string.
@@ -47,6 +55,6 @@ Set your alarm for any time that can be read by the date command.   Run any prog
      $ sudo ~/bin/ebay-alarm 12am next day -- pm-suspend
      $ sudo ~/bin/ebay-alarm 2 am next day -c btrfs scrub start -B /dev/sdd
     
-    ### Installation
-    download the ebay-alarm script and run it with perl    
-    --time-zone mode requires gawk (GNU awk) 
+### Installation:
+Download the ebay-alarm script and run it with Perl.    
+--time-zone mode requires gawk (GNU awk) 
