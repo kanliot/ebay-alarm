@@ -248,6 +248,7 @@ while (1) {
 	}
 }
 sub playexit { 
-	system @commandargs if scalar @commandargs; 
-	exit;
+	my $ret = 0;
+	$ret = system @commandargs if scalar @commandargs; 
+	exit $ret>>8;
 }
