@@ -1,4 +1,4 @@
-# ebay-alarm
+get help on update-refget help on update-refget help on update-ref# ebay-alarm
 Set your alarm for any time that can be read by the date command.   Run any program on the command line. 
 
 If `at` did what you wanted, you wouldn't be here, reading this page.    
@@ -27,7 +27,7 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
     	ebay-alarm uses a second process to monitor time zone changes and other changes in the sys time
     	ebay-alarm runs in the foreground.  use '&' to run in the background.
     	ebay-alarm does not provide a countdown, or a progress indicator.
-    	ebay-alarm does not calculate seconds to sleep.  It sleeps for 1-59 secs, then calls system time.
+    	ebay-alarm does not calculate seconds to sleep. It sleeps for 1-59 secs, then calls system time
     
     Program arguments must include a valid time. 
     If no command to run is given, the program simply exits at the proper time.
