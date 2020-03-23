@@ -24,10 +24,10 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
     	ebay-alarm calls the linux date command to parse the date and time of the alarm.
     		See https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html
     	ebay-alarm then sleeps at intervals until that time, then runs the COMMAND and exits.
-    	ebay-alarm uses a second process to monitor time zone changes and other changes in the system time.
+    	ebay-alarm uses a second process to monitor time zone changes and other changes in the sys time
     	ebay-alarm runs in the foreground.  use '&' to run in the background.
     	ebay-alarm does not provide a countdown, or a progress indicator.
-    	ebay-alarm does not calculate seconds to sleep.  it sleeps for 1-59 seconds at a time, then looks at the system time.
+    	ebay-alarm does not calculate seconds to sleep.  It sleeps for 1-59 secs, then calls system time.
     
     Program arguments must include a valid time. 
     If no command to run is given, the program simply exits at the proper time.
