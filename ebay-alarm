@@ -76,7 +76,7 @@ terminal, $progname will not create one.  Use tmux or screen to run $progname
 	$progname uses a second process to monitor time zone changes and other changes in the system time.
 	$progname runs in the foreground.  use '&' to run in the background.
 	$progname does not provide a countdown, or a progress indicator.
-	$progname does not calculate seconds to sleep.  it sleeps for 1-3 seconds at a time, then looks at the system time.
+	$progname does not calculate seconds to sleep.  it sleeps for 1-59 seconds at a time, then looks at the system time.
 
 Program arguments must include a valid time. 
 If no command to run is given, the program simply exits at the proper time.
