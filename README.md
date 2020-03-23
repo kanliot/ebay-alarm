@@ -44,8 +44,11 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
     	
     	--		Same as -c 
     
-    	--time-zone 	ebay-alarm handles when your system (laptop) changes to a new time zone. 
-    	   	Some laptops do this automatically when crossing time-zones. Requires more cpu.  
+    	--time-zone 	Turns on 'time zone' awareness.   ebay-alarm will use a second
+                process to monitor changes in the system time-zone.  This is an extra feature
+                because other programs do not monitor time-zone changes when laptops 
+                change their clocks to automatically match the time zone they have moved into.
+                It's off by default because it uses more cpu when not sleeping.
     
     Five examples: 
      $ ebay-alarm now + 1 day + 1 min  -c mpv ~/'music/Clawhammer-Dogma.mp3'
