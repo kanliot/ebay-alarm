@@ -58,5 +58,5 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
      $ sudo ~/bin/ebay-alarm 2 am next day -c btrfs scrub start -B /dev/sdd
     
 ### Installation:
-Download the ebay-alarm script and make it executable ( chmod +x ./ebay-alarm )    
+Download the ebay-alarm script and make it executable ( `chmod +x ./ebay-alarm` )    
 `--time-zone` mode requires gawk (GNU awk) 
