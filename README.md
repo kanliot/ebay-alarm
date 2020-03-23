@@ -1,4 +1,4 @@
-get help on update-refget help on update-refget help on update-ref# ebay-alarm
+# ebay-alarm
 Set your alarm for any time that can be read by the date command.   Run any program on the command line. 
 
 If `at` did what you wanted, you wouldn't be here, reading this page.    
