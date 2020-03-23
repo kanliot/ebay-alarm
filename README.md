@@ -59,4 +59,4 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
     
 ### Installation:
 Download the ebay-alarm script and make it executable ( `chmod +x ./ebay-alarm` )    
-`--time-zone` mode requires gawk (GNU awk) 
+The special `--time-zone` mode will fail on OSX or BSD because it requires gawk  (GNU awk) 
