@@ -132,8 +132,15 @@ while (1) {
 	$b_quiet=1,next  if $_ eq '-q';
 	$b_passtimes=1,next if $_ eq '-p';
 	$b_quiet = $b_passtimes = 1,next if $_ eq '-pq' or $_ eq '-qp';
-	$ext_time =1,next if $_ eq '--time-zone';
-	push @timeargs, $_;
+	if ($_ eq '--time-zone') {
+		my $rr_time = `gawk 'BEGIN{print strftime("%Y %j %k %M %S");}' `;
+		if ($?) {
+			print STDERR "$progname: error running GNU gawk for special --time-zone mode\n";
+			exit 1;
+		}
+		$ext_time =1,next;
+	}
+ 	push @timeargs, $_;
 }
 
 say( "$progname requires time arguments.  maybe you meant --help ?"),exit if not scalar @timeargs; 
@@ -214,7 +221,11 @@ my $daymins = $thr * 60 + $tmin;  # odd but if we sleep we could miss a window w
 while (1) {
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 	if ($ext_time) { #handle timezone changes.
-		my $rr_time = ` awk 'BEGIN{print strftime("%Y %j %k %M %S");}' `;
+		my $rr_time = `gawk 'BEGIN{print strftime("%Y %j %k %M %S");}' `;
+		if  ($?) {
+			print STDERR "$progname: error running GNU gawk for special --time-zone mode\n";
+			exit 1;
+		}
 		# %j day_of_year
 		# %k 24_hour hour
 		
