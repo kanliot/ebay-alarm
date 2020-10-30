@@ -61,3 +61,6 @@ If `at` did what you wanted, you wouldn't be here, reading this page.
 ### Installation:
 Download the ebay-alarm script and make it executable ( `chmod +x ./ebay-alarm` )    
 The special `--time-zone` mode will fail on OSX or BSD because it requires gawk  (GNU awk) 
+
+Kind of bugs: 
+ebay-alarm does time zone conversion, and you can set an alarm for `13:00 GMT`. This is a problem if you type an alarm for 10:00 AM EST, but you actually wanted an alarm for 10:00 AM EDT.   The program will not warn you that the alarm is set for a time zone that is not in effect in your area.
